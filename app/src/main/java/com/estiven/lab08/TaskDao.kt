@@ -1,31 +1,39 @@
 package com.estiven.lab08
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-
+import androidx.room.*
 
 @Dao
 interface TaskDao {
-
-
-    // Obtener todas las tareas
     @Query("SELECT * FROM tasks")
     suspend fun getAllTasks(): List<Task>
 
-
-    // Insertar una nueva tarea
     @Insert
     suspend fun insertTask(task: Task)
 
-
-    // Marcar una tarea como completada o no completada
     @Update
     suspend fun updateTask(task: Task)
 
+    @Delete
+    suspend fun deleteTask(task: Task)
 
-    // Eliminar todas las tareas
     @Query("DELETE FROM tasks")
     suspend fun deleteAllTasks()
+
+    @Query("SELECT * FROM tasks WHERE description LIKE '%' || :searchQuery || '%'")
+    suspend fun searchTasks(searchQuery: String): List<Task>
+
+    @Query("SELECT * FROM tasks ORDER BY " +
+            "CASE :sortBy " +
+            "WHEN 'name' THEN description " +
+            "WHEN 'date' THEN createdAt " +
+            "WHEN 'status' THEN isCompleted " +
+            "ELSE createdAt END " +
+            "|| CASE WHEN :isAscending = 1 THEN ' ASC' ELSE ' DESC' END")
+    suspend fun getSortedTasks(sortBy: String, isAscending: Boolean): List<Task>
 }
+
